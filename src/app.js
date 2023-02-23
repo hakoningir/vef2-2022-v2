@@ -7,6 +7,7 @@ import passport from './lib/login.js';
 import { isInvalid } from './lib/template-helpers.js';
 import { adminRouter } from './routes/admin-routes.js';
 import { indexRouter } from './routes/index-routes.js';
+import { userRouter } from './routes/user-routes.js';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.locals = {
 
 app.use('/admin', adminRouter);
 app.use('/', indexRouter);
+app.use('/', userRouter);
 
 /** Middleware sem sér um 404 villur. */
 app.use((req, res) => {

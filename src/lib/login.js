@@ -50,14 +50,21 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
+const q = `
+  SELECT admin FROM users;
+`;
+
 // Hjálpar middleware sem athugar hvort notandi sé innskráður og hleypir okkur
 // þá áfram, annars sendir á /login
 export function ensureLoggedIn(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-
+  if(!q){
+    return res.redirect('/user/login');
+  }
   return res.redirect('/admin/login');
+
 }
 
 export default passport;

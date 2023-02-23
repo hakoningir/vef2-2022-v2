@@ -1,0 +1,41 @@
+<%- include('header') -%>
+
+<h1>Nýskráning</h1>
+
+<form class="form" method="post" action="signup" autocomplete="off">
+  <div class="field">
+    <label for="nafn"> Nafn</label>
+    <input type="text" name="nafn" id="nafn">
+  </div>
+
+
+  <div class="field">
+    <label for="username">Notendanafn</label>
+    <input type="text" name="username" id="username">
+  </div>
+
+
+  <div class="field">
+    <label for="password">Lykilorð</label>
+    <input type="password" name="password" id="password">
+  </div>
+
+  <% if (typeof message !== "undefined") { %>
+    <p><%= message %></p>
+  <% } %>
+
+  <% if (errors.length > 0) { %>
+    <h3 class="errors__title">Villur við skráningu:</h3>
+    <ul class="errors">
+      <% errors.forEach((error) => { %>
+        <li class="error"><label for="<%= error.param %>"><%= error.msg %></label></li>
+      <% }); %>
+    </ul>
+  <% } %>
+
+  <button class="button">Skrá notanda</button>
+</form>
+
+<a href="/">Til baka</a>
+
+<%- include('footer') -%>

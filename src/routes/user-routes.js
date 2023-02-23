@@ -1,5 +1,5 @@
 import express from 'express';
-import { validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
   createEvent,
@@ -10,54 +10,73 @@ import {
 } from '../lib/db.js';
 import passport, { ensureLoggedIn } from '../lib/login.js';
 import { slugify } from '../lib/slugify.js';
+import { createUser, findByUsername } from '../lib/users.js';
 import {
   registrationValidationMiddleware,
   sanitizationMiddleware,
   xssSanitizationMiddleware,
 } from '../lib/validation.js';
 
-export const adminRouter = express.Router();
+export const userRouter = express.Router();
 
 async function index(req, res) {
   const events = await listEvents();
-  const { user: { username } = {} } = req || {};
+  const {user: {username} = {} } = req || {};
 
-  return res.render('admin', {
+  return res.render('user', {
     username,
     events,
     errors: [],
     data: {},
-    title: 'Viðburðir — umsjón',
-    admin: true,
+    title: 'Viðburðir - umsjón',
+    user: true,
   });
 }
 
-function login(req, res) {
-  if (req.isAuthenticated()) {
-    return res.redirect('/admin');
+function login(req, res){
+  if (req.isAuthenticated()){
+    return res.redirect('/user');
   }
 
   let message = '';
 
-  // Athugum hvort einhver skilaboð séu til í session, ef svo er birtum þau
-  // og hreinsum skilaboð
-  if (req.session.messages && req.session.messages.length > 0) {
+  if (req.session.messages && req.session.messages.length > 0){
     message = req.session.messages.join(', ');
     req.session.messages = [];
   }
 
-  return res.render('login', { message, title: 'Innskráning' });
+  return res.render('login', {message, title: 'Innskráning'});
 }
 
-async function validationCheck(req, res, next) {
-  const { name, description } = req.body;
+const registerValidation = [
+  body('username')
+    .isLength({min: 1, max: 64})
+    .withMessage('Skrá verður notendanafn, hámarki 64 stafir.'),
+  body('name')
+    .isLength({min:1, max: 64})
+    .withMessage('Skrá verður nafn, hámarki 64 stafir.'),
+  body('password')
+    .isLength({min: 10, max: 256})
+    .withMessage('Skrá verður lykilorð, lágmark 10 stafir.'),
+  body('username').custom(async(username) => {
+    const user = await findByUsername(username);
+    if (user){
+      return Promise.reject(new Error('Notendanafn er þegar skráð.'));
+    }
+    return Promise.resolve();
+  })
+];
+
+async function validationCheck(req, res, next){
+  const { name } = req.body;
 
   const events = await listEvents();
-  const { user: { username } = {} } = req;
+  const { user: { username, password } = {} } = req;
 
   const data = {
     name,
-    description,
+    username,
+    password,
   };
 
   const validation = validationResult(req);
@@ -74,18 +93,19 @@ async function validationCheck(req, res, next) {
   }
 
   if (!validation.isEmpty() || customValidations.length > 0) {
-    return res.render('admin', {
+    return res.render('user', {
       events,
       username,
       title: 'Viðburðir — umsjón',
       data,
       errors: validation.errors.concat(customValidations),
-      admin: true,
+      user: true,
     });
   }
 
   return next();
 }
+
 
 async function validationCheckUpdate(req, res, next) {
   const { name, description } = req.body;
@@ -113,13 +133,13 @@ async function validationCheckUpdate(req, res, next) {
   }
 
   if (!validation.isEmpty() || customValidations.length > 0) {
-    return res.render('admin-event', {
+    return res.render('user-event', {
       username,
       event,
       title: 'Viðburðir — umsjón',
       data,
       errors: validation.errors.concat(customValidations),
-      admin: true,
+      user: true,
     });
   }
 
@@ -129,15 +149,34 @@ async function validationCheckUpdate(req, res, next) {
 async function registerRoute(req, res) {
   const { name, description } = req.body;
   const slug = slugify(name);
-
   const created = await createEvent({ name, slug, description });
 
   if (created) {
-    return res.redirect('/admin');
+    return res.redirect('/user');
   }
 
   return res.render('error');
 }
+
+// userRouter.get('/signup', (req, res) => {
+//   const newUser = await createUser(req);
+//   res.render('signup', registerValidation, newUser, {title: 'Nýskráning'});
+// });
+// //
+
+// userRouter.post('/signup', (req, res) => {
+//   // console.log(req.body);
+//   res.render('signup', {title: 'Nýskráning'});
+// });
+
+
+async function register(req, res){
+  const { name, username, password } = req.body;
+  const newUser = await createUser(name, username, password);
+  res.render('signup', registerValidation, newUser, {title: 'Nýskráning'});
+}
+
+userRouter.post('/signup', registerValidation, register)
 
 async function updateRoute(req, res) {
   const { name, description } = req.body;
@@ -154,11 +193,12 @@ async function updateRoute(req, res) {
   });
 
   if (updated) {
-    return res.redirect('/admin');
+    return res.redirect('/user');
   }
 
   return res.render('error');
 }
+
 
 async function eventRoute(req, res, next) {
   const { slug } = req.params;
@@ -170,7 +210,7 @@ async function eventRoute(req, res, next) {
     return next();
   }
 
-  return res.render('admin-event', {
+  return res.render('user-event', {
     username,
     title: `${event.name} — Viðburðir — umsjón`,
     event,
@@ -179,8 +219,8 @@ async function eventRoute(req, res, next) {
   });
 }
 
-adminRouter.get('/', ensureLoggedIn, catchErrors(index));
-adminRouter.post(
+userRouter.get('/', ensureLoggedIn, catchErrors(index));
+userRouter.post(
   '/',
   ensureLoggedIn,
   registrationValidationMiddleware('description'),
@@ -190,31 +230,31 @@ adminRouter.post(
   catchErrors(registerRoute)
 );
 
-adminRouter.get('/login', login);
-adminRouter.post(
+userRouter.get('/login', login);
+userRouter.post(
   '/login',
 
   // Þetta notar strat að ofan til að skrá notanda inn
   passport.authenticate('local', {
     failureMessage: 'Notandanafn eða lykilorð vitlaust.',
-    failureRedirect: '/admin/login',
+    failureRedirect: '/user/login',
   }),
 
-  // Ef við komumst hingað var notandi skráður inn, senda á /admin
+  // Ef við komumst hingað var notandi skráður inn, senda á /user
   (req, res) => {
-    res.redirect('/admin');
+    res.redirect('/user');
   }
 );
 
-adminRouter.get('/logout', (req, res, next) => {
+userRouter.get('/logout', (req, res, next) => {
   // logout hendir session cookie og session
   req.logout(err=> {if(err){ next(err)}});
   res.redirect('/');
 });
 
 // Verður að vera seinast svo það taki ekki yfir önnur route
-adminRouter.get('/:slug', ensureLoggedIn, catchErrors(eventRoute));
-adminRouter.post(
+userRouter.get('/:slug', ensureLoggedIn, catchErrors(eventRoute));
+userRouter.post(
   '/:slug',
   ensureLoggedIn,
   registrationValidationMiddleware('description'),

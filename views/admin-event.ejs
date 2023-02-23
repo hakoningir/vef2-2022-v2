@@ -2,7 +2,7 @@
 
 <section class="event">
   <div class="event__registration">
-    <h2 class="event__subtitle">Uppfæra viðburð</h2>
+    <h2 class="event__subtitle">Uppfæra viðburð</h2>  
     <form method="post" action="/admin/<%= event.slug %>" enctype="application/x-www-form-urlencoded" class="">
       <div class="field field--input<%= locals.isInvalid('name', errors) ?  ' field--invalid' : '' %>">
         <label for="name">Nafn*:</label>

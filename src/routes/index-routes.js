@@ -5,7 +5,7 @@ import { listEvent, listEvents, listRegistered, register } from '../lib/db.js';
 import {
   registrationValidationMiddleware,
   sanitizationMiddleware,
-  xssSanitizationMiddleware,
+  xssSanitizationMiddleware
 } from '../lib/validation.js';
 
 export const indexRouter = express.Router();
@@ -48,12 +48,19 @@ async function eventRegisteredRoute(req, res) {
   });
 }
 
+// async function userValidationCheck(req, res, next){
+//   const {name, username, password} = req.body;
+//   const {slug} = req.params;
+//   const event = await getUser(slug);
+//   const users = await registeredUsers();
+// }
+
 async function validationCheck(req, res, next) {
   const { name, comment } = req.body;
 
   // TODO tvítekning frá því að ofan
   const { slug } = req.params;
-  const event = await listEvent(slug);
+  const event = await listEvents(); // ! þú varst að nota listEvent hér, vilt nota listEvents
   const registered = await listRegistered(event.id);
 
   const data = {
@@ -64,8 +71,9 @@ async function validationCheck(req, res, next) {
   const validation = validationResult(req);
 
   if (!validation.isEmpty()) {
+    console.log(event)
     return res.render('event', {
-      title: `${event.name} — Viðburðasíðan`,
+      title: `${event.title} — Viðburðasíðan`,
       data,
       event,
       registered,
@@ -94,7 +102,21 @@ async function registerRoute(req, res) {
   return res.render('error');
 }
 
+async function signup(req, res) {
+  const { user: { username, password } = {} } = req || {};
+
+  return res.render('signup', {
+    admin: false,
+    username,
+    password,
+    errors: [],
+    data: {},
+    title: 'Nýskráning',
+  });
+}
+
 indexRouter.get('/', catchErrors(indexRoute));
+indexRouter.get('/signup', catchErrors(signup));
 indexRouter.get('/:slug', catchErrors(eventRoute));
 indexRouter.post(
   '/:slug',
