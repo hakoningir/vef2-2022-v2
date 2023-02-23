@@ -48,19 +48,12 @@ async function eventRegisteredRoute(req, res) {
   });
 }
 
-// async function userValidationCheck(req, res, next){
-//   const {name, username, password} = req.body;
-//   const {slug} = req.params;
-//   const event = await getUser(slug);
-//   const users = await registeredUsers();
-// }
 
 async function validationCheck(req, res, next) {
   const { name, comment } = req.body;
 
   // TODO tvítekning frá því að ofan
-  const { slug } = req.params;
-  const event = await listEvents(); // ! þú varst að nota listEvent hér, vilt nota listEvents
+  const event = await listEvents();
   const registered = await listRegistered(event.id);
 
   const data = {
@@ -71,7 +64,6 @@ async function validationCheck(req, res, next) {
   const validation = validationResult(req);
 
   if (!validation.isEmpty()) {
-    console.log(event)
     return res.render('event', {
       title: `${event.title} — Viðburðasíðan`,
       data,

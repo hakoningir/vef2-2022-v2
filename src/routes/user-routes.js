@@ -5,12 +5,12 @@ import {
   createEvent,
   listEvent,
   listEventByName,
-  listEvents,
+  listEvents, 
   updateEvent,
 } from '../lib/db.js';
 import passport, { ensureLoggedIn } from '../lib/login.js';
 import { slugify } from '../lib/slugify.js';
-import { createUser, findByUsername } from '../lib/users.js';
+import { findByUsername } from '../lib/users.js';
 import {
   registrationValidationMiddleware,
   sanitizationMiddleware,
@@ -170,13 +170,13 @@ async function registerRoute(req, res) {
 // });
 
 
-async function register(req, res){
-  const { name, username, password } = req.body;
-  const newUser = await createUser(name, username, password);
-  res.render('signup', registerValidation, newUser, {title: 'Nýskráning'});
-}
+// async function register(req, res){
+//   const { name, username, password } = req.body;
+//   const newUser = await createUser(name, username, password);
+//   res.render('signup', registerValidation, newUser, {title: 'Nýskráning'});
+// }
 
-userRouter.post('/signup', registerValidation, register)
+userRouter.post('/signup', registerValidation)
 
 async function updateRoute(req, res) {
   const { name, description } = req.body;

@@ -21,5 +21,5 @@ CREATE TABLE public.users (
   id serial PRIMARY KEY,
   name character varying(64) NOT NULL,
   username character varying(64) NOT NULL UNIQUE,
-  password character varying(256) NOT NULL,
+  password character varying(256) NOT NULL
 );
