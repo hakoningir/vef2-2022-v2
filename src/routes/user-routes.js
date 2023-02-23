@@ -5,7 +5,7 @@ import {
   createEvent,
   listEvent,
   listEventByName,
-  listEvents, 
+  listEvents,
   updateEvent,
 } from '../lib/db.js';
 import passport, { ensureLoggedIn } from '../lib/login.js';
@@ -49,15 +49,15 @@ function login(req, res){
 }
 
 const registerValidation = [
-  body('username')
-    .isLength({min: 1, max: 64})
-    .withMessage('Skrá verður notendanafn, hámarki 64 stafir.'),
   body('name')
     .isLength({min:1, max: 64})
     .withMessage('Skrá verður nafn, hámarki 64 stafir.'),
+  body('username')
+    .isLength({min: 1, max: 64})
+    .withMessage('Skrá verður notendanafn, hámarki 64 stafir.'),
   body('password')
-    .isLength({min: 10, max: 256})
-    .withMessage('Skrá verður lykilorð, lágmark 10 stafir.'),
+    .isLength({min: 6, max: 256})
+    .withMessage('Skrá verður lykilorð, lágmarki 6 stafir.'),
   body('username').custom(async(username) => {
     const user = await findByUsername(username);
     if (user){
@@ -150,7 +150,6 @@ async function registerRoute(req, res) {
   const { name, description } = req.body;
   const slug = slugify(name);
   const created = await createEvent({ name, slug, description });
-
   if (created) {
     return res.redirect('/user');
   }
@@ -158,25 +157,8 @@ async function registerRoute(req, res) {
   return res.render('error');
 }
 
-// userRouter.get('/signup', (req, res) => {
-//   const newUser = await createUser(req);
-//   res.render('signup', registerValidation, newUser, {title: 'Nýskráning'});
-// });
-// //
-
-// userRouter.post('/signup', (req, res) => {
-//   // console.log(req.body);
-//   res.render('signup', {title: 'Nýskráning'});
-// });
-
-
-// async function register(req, res){
-//   const { name, username, password } = req.body;
-//   const newUser = await createUser(name, username, password);
-//   res.render('signup', registerValidation, newUser, {title: 'Nýskráning'});
-// }
-
-userRouter.post('/signup', registerValidation)
+userRouter.get('/signup');
+userRouter.post('/signup', registerValidation);
 
 async function updateRoute(req, res) {
   const { name, description } = req.body;
@@ -204,7 +186,7 @@ async function eventRoute(req, res, next) {
   const { slug } = req.params;
   const { user: { username } = {} } = req;
 
-  const event = await listEvent(slug);
+  const event = await listEvent (slug);
 
   if (!event) {
     return next();

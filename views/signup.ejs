@@ -6,31 +6,31 @@
   <div class="field">
     <label for="nafn"> Nafn</label>
     <input type="text" name="nafn" id="nafn">
+    <% if (errors.length > 0) { %>
+      <p> <%= message %> </p>
+    <% } %>
   </div>
 
 
   <div class="field">
     <label for="username">Notendanafn</label>
     <input type="text" name="username" id="username">
+    <% if (errors.length > 0) { %>
+      <p> <%= message %> </p>
+    <% } %>
   </div>
 
 
   <div class="field">
     <label for="password">Lykilorð</label>
     <input type="password" name="password" id="password">
+    <% if (errors.length > 0) { %>
+      <p> <%= message %> </p>
+    <% } %>
   </div>
 
   <% if (typeof message !== "undefined") { %>
     <p><%= message %></p>
-  <% } %>
-
-  <% if (errors.length > 0) { %>
-    <h3 class="errors__title">Villur við skráningu:</h3>
-    <ul class="errors">
-      <% errors.forEach((error) => { %>
-        <li class="error"><label for="<%= error.param %>"><%= error.msg %></label></li>
-      <% }); %>
-    </ul>
   <% } %>
 
   <button class="button">Skrá notanda</button>
