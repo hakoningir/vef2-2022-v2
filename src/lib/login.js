@@ -1,6 +1,6 @@
 import passport from 'passport';
 import { Strategy } from 'passport-local';
-import { comparePasswords, findById, findByUsername } from './users.js';
+import { comparePasswords, findById, findByUsername, isAdmin } from './users.js';
 
 /**
  * Athugar hvort username og password sé til í notandakerfi.
@@ -50,9 +50,6 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-const q = `
-  SELECT admin FROM users;
-`;
 
 // Hjálpar middleware sem athugar hvort notandi sé innskráður og hleypir okkur
 // þá áfram, annars sendir á /login
@@ -60,11 +57,16 @@ export function ensureLoggedIn(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  if(!q){
-    return res.redirect('/user/login');
-  }
-  return res.redirect('/admin/login');
 
+  return res.redirect('/login');
 }
 
+export async function ensureAdmin(req, res, next) {
+  const {user: {username} = {}} = req;
+
+  if(await isAdmin(username)){
+    return next();
+  }
+  return res.redirect('/login');
+}
 export default passport;

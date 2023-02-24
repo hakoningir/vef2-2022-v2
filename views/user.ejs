@@ -6,7 +6,7 @@
 
 <div class="event__registration">
   <h2 class="event__subtitle">Nýr viðburður</h2>
-  <form method="post" action="/user/" enctype="application/x-www-form-urlencoded" class="">
+  <form method="post" action="/" enctype="application/x-www-form-urlencoded" class="">
     <div class="field field--input<%= locals.isInvalid('name', errors) ?  ' field--invalid' : '' %>">
       <label for="name">Nafn*:</label>
       <input type="text" name="name" id="name" value="<%= data.name %>">
@@ -32,7 +32,7 @@
 
 <div class="user">
   <p class="user__loggedin">Innskráður sem: <strong><%= username %></strong></p>
-  <p class="user__logout"><a href="/user/logout">Útskrá</a></p>
+  <p class="user__logout"><a href="/logout">Útskrá</a></p>
 </div>
 
 <%- include('footer') -%>

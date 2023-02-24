@@ -2,6 +2,7 @@ import express from 'express';
 import { validationResult } from 'express-validator';
 import { catchErrors } from '../lib/catch-errors.js';
 import { listEvent, listEvents, listRegistered, register } from '../lib/db.js';
+import { isAdmin } from '../lib/users.js';
 import {
   registrationValidationMiddleware,
   sanitizationMiddleware,
@@ -12,10 +13,11 @@ export const indexRouter = express.Router();
 
 async function indexRoute(req, res) {
   const events = await listEvents();
-
+  const admin = await isAdmin(req.user?.username);
   res.render('index', {
     title: 'Viðburðasíðan',
-    admin: false,
+    admin,
+    authenticated: req.isAuthenticated(),
     events,
   });
 }
@@ -34,6 +36,7 @@ async function eventRoute(req, res, next) {
     title: `${event.name} — Viðburðasíðan`,
     event,
     registered,
+    authenticated: req.isAuthenticated(),
     errors: [],
     data: {},
   });
@@ -68,6 +71,7 @@ async function validationCheck(req, res, next) {
       title: `${event.title} — Viðburðasíðan`,
       data,
       event,
+      authenticated: req.isAuthenticated(),
       registered,
       errors: validation.errors,
     });
@@ -77,10 +81,10 @@ async function validationCheck(req, res, next) {
 }
 
 async function registerRoute(req, res) {
-  const { name, comment } = req.body;
+  const { comment } = req.body;
   const { slug } = req.params;
   const event = await listEvent(slug);
-
+  const {name} = req.user;
   const registered = await register({
     name,
     comment,
@@ -94,21 +98,7 @@ async function registerRoute(req, res) {
   return res.render('error');
 }
 
-async function signup(req, res) {
-  const { user: { username, password } = {} } = req || {};
-
-  return res.render('signup', {
-    admin: false,
-    username,
-    password,
-    errors: [],
-    data: {},
-    title: 'Nýskráning',
-  });
-}
-
 indexRouter.get('/', catchErrors(indexRoute));
-indexRouter.get('/signup', catchErrors(signup));
 indexRouter.get('/:slug', catchErrors(eventRoute));
 indexRouter.post(
   '/:slug',

@@ -134,17 +134,24 @@ export async function listEvents() {
   return null;
 }
 
-// export async function getUser(slug) {
-//   const q = `
-//     SELECT name, username, password
-//     FROM users;
-//   `;
-//   const result = await query(q, [slug]);
-//   if (result && result.rowCount === 1){
-//     return result.rows[0];
-//   }
-//   return null;
-// }
+export async function deleteEvent(id) {
+  const q1 = `
+    DELETE FROM registrations
+    WHERE event = $1;
+  `;
+  const q2 = `
+    DELETE FROM events
+    WHERE id = $1;
+  `;
+
+  const result1 = await query(q1, [id]);
+
+  if (result1) {
+    const result2 = await query(q2, [id]);
+    return result2 && result2.rowCount === 1;
+  }
+  return false;
+}
 
 export async function listEvent(slug) {
   const q = `

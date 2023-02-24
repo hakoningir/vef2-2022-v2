@@ -4,11 +4,11 @@
 
 <form class="form" method="post" action="signup" autocomplete="off">
   <div class="field">
-    <label for="nafn"> Nafn</label>
-    <input type="text" name="nafn" id="nafn">
+    <label for="name"> Nafn</label>
+    <input type="text" name="name" id="name">
     <% if (errors.length > 0) { %>
-      <p> <%= message %> </p>
-    <% } %>
+      <%= errors.find(x=> x.param == 'name')?.msg %>
+      <% } %>
   </div>
 
 
@@ -16,8 +16,8 @@
     <label for="username">Notendanafn</label>
     <input type="text" name="username" id="username">
     <% if (errors.length > 0) { %>
-      <p> <%= message %> </p>
-    <% } %>
+      <%= errors.find(x=> x.param == 'username')?.msg %>
+      <% } %>
   </div>
 
 
@@ -25,8 +25,8 @@
     <label for="password">Lykilorð</label>
     <input type="password" name="password" id="password">
     <% if (errors.length > 0) { %>
-      <p> <%= message %> </p>
-    <% } %>
+      <%= errors.find(x=> x.param == 'password')?.msg %>
+      <% } %>
   </div>
 
   <% if (typeof message !== "undefined") { %>

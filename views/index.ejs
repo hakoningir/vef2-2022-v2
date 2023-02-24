@@ -5,9 +5,15 @@
 <%- include('events') -%>
 
 <div class="link">
-  <a class="link__link" href="/admin">Innskráning</a>
+  <% if (!authenticated) { %>
+    <a class="link__link" href="/login">Innskráning</a>
 
-  <a class="link__link" href="/signup">Nýskráning</a>
+    <a class="link__link" href="/signup">Nýskráning</a>
+    <% } else {%>
+      <a class="link__link" href="/logout">Útskrá </a>
+      <% if (admin) { %>
+        <a class="link__link" href="/admin">Admin síða </a>
+        <% } %>
+    <% } %>
 </div>
-
 <%- include('footer') -%>

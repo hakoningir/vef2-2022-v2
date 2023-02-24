@@ -25,11 +25,8 @@
   </div>
   <div class="event__registration">
     <h2 class="event__subtitle">Skráðu þig</h2>
+    <% if(authenticated){ %>
     <form method="post" action="/<%= event.slug %>" enctype="application/x-www-form-urlencoded" class="">
-      <div class="field field--input<%= locals.isInvalid('name', errors) ?  ' field--invalid' : '' %>">
-        <label for="name">Nafn*:</label>
-        <input type="text" name="name" id="name">
-      </div>
 
       <div class="field field--textarea<%= locals.isInvalid('comment', errors) ?  ' field--invalid' : '' %>">
         <label for="comment">Athugasemd:</label>
@@ -47,6 +44,11 @@
 
       <button class="button">Skrá mig</button>
     </form>
+    <% } else { %>
+      <p>Skráðu þig inn til þess að geta skráð þig á viðburð.</p>
+        <a class="link__link" href="/login">Innskráning</a>
+        <a class="link__link" href="/signup">Nýskráning</a>
+      <% } %>
   </div>
   <div class="link">
     <a class="link__link" href="/">Til baka</a>

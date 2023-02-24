@@ -3,12 +3,13 @@ import { validationResult } from 'express-validator';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
   createEvent,
+  deleteEvent,
   listEvent,
   listEventByName,
   listEvents,
   updateEvent,
 } from '../lib/db.js';
-import passport, { ensureLoggedIn } from '../lib/login.js';
+import { ensureAdmin, ensureLoggedIn } from '../lib/login.js';
 import { slugify } from '../lib/slugify.js';
 import {
   registrationValidationMiddleware,
@@ -30,23 +31,6 @@ async function index(req, res) {
     title: 'Viðburðir — umsjón',
     admin: true,
   });
-}
-
-function login(req, res) {
-  if (req.isAuthenticated()) {
-    return res.redirect('/admin');
-  }
-
-  let message = '';
-
-  // Athugum hvort einhver skilaboð séu til í session, ef svo er birtum þau
-  // og hreinsum skilaboð
-  if (req.session.messages && req.session.messages.length > 0) {
-    message = req.session.messages.join(', ');
-    req.session.messages = [];
-  }
-
-  return res.render('login', { message, title: 'Innskráning' });
 }
 
 async function validationCheck(req, res, next) {
@@ -160,6 +144,17 @@ async function updateRoute(req, res) {
   return res.render('error');
 }
 
+async function deleteRoute(req, res){
+  const { slug } = req.query;
+
+  const event = await listEvent(slug);
+  const del = await deleteEvent(event.id);
+  if(del){
+    return res.redirect('/admin');
+  }
+  return res.render('error');
+}
+
 async function eventRoute(req, res, next) {
   const { slug } = req.params;
   const { user: { username } = {} } = req;
@@ -179,31 +174,16 @@ async function eventRoute(req, res, next) {
   });
 }
 
-adminRouter.get('/', ensureLoggedIn, catchErrors(index));
+adminRouter.get('/', ensureLoggedIn, ensureAdmin, catchErrors(index));
 adminRouter.post(
   '/',
   ensureLoggedIn,
+  ensureAdmin,
   registrationValidationMiddleware('description'),
   xssSanitizationMiddleware('description'),
   catchErrors(validationCheck),
   sanitizationMiddleware('description'),
   catchErrors(registerRoute)
-);
-
-adminRouter.get('/login', login);
-adminRouter.post(
-  '/login',
-
-  // Þetta notar strat að ofan til að skrá notanda inn
-  passport.authenticate('local', {
-    failureMessage: 'Notandanafn eða lykilorð vitlaust.',
-    failureRedirect: '/admin/login',
-  }),
-
-  // Ef við komumst hingað var notandi skráður inn, senda á /admin
-  (req, res) => {
-    res.redirect('/admin');
-  }
 );
 
 adminRouter.get('/logout', (req, res, next) => {
@@ -212,8 +192,9 @@ adminRouter.get('/logout', (req, res, next) => {
   res.redirect('/');
 });
 
+adminRouter.post('/delete', ensureLoggedIn, ensureAdmin, catchErrors(deleteRoute));
 // Verður að vera seinast svo það taki ekki yfir önnur route
-adminRouter.get('/:slug', ensureLoggedIn, catchErrors(eventRoute));
+adminRouter.get('/:slug', ensureLoggedIn, ensureAdmin, catchErrors(eventRoute));
 adminRouter.post(
   '/:slug',
   ensureLoggedIn,
