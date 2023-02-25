@@ -117,15 +117,16 @@ export async function register({ name, comment, event } = {}) {
   return null;
 }
 
-export async function listEvents() {
+export async function listEvents(offset = 0) {
   const q = `
     SELECT
       id, name, slug, description, created, updated
     FROM
       events
+    ORDER BY name limit 5 OFFSET $1*5;
   `;
 
-  const result = await query(q);
+  const result = await query(q, [offset]);
 
   if (result) {
     return result.rows;
@@ -159,7 +160,7 @@ export async function listEvent(slug) {
       id, name, slug, description, created, updated
     FROM
       events
-    WHERE slug = $1
+    WHERE slug = $1;
   `;
 
   const result = await query(q, [slug]);
@@ -178,7 +179,7 @@ export async function listEventByName(name) {
       id, name, slug, description, created, updated
     FROM
       events
-    WHERE name = $1
+    WHERE name = $1;
   `;
 
   const result = await query(q, [name]);
@@ -196,7 +197,7 @@ export async function listRegistered(event) {
       id, name, comment
     FROM
       registrations
-    WHERE event = $1
+    WHERE event = $1;
   `;
 
   const result = await query(q, [event]);

@@ -12,7 +12,13 @@ import {
 export const indexRouter = express.Router();
 
 async function indexRoute(req, res) {
-  const events = await listEvents();
+  const {offset} = req.params;
+  let events;
+  if (offset){
+    events = await listEvents(offset);
+  } else{
+    events = await listEvents();
+  }
   const admin = await isAdmin(req.user?.username);
   res.render('index', {
     title: 'Viðburðasíðan',
@@ -84,7 +90,7 @@ async function registerRoute(req, res) {
   const { comment } = req.body;
   const { slug } = req.params;
   const event = await listEvent(slug);
-  const {name} = req.user;
+  const { name } = req.user;
   const registered = await register({
     name,
     comment,
@@ -98,8 +104,9 @@ async function registerRoute(req, res) {
   return res.render('error');
 }
 
+indexRouter.get('/events/:slug', catchErrors(eventRoute));
+indexRouter.get('/:offset', catchErrors(indexRoute));
 indexRouter.get('/', catchErrors(indexRoute));
-indexRouter.get('/:slug', catchErrors(eventRoute));
 indexRouter.post(
   '/:slug',
   registrationValidationMiddleware('comment'),
