@@ -22,9 +22,15 @@ export const adminRouter = express.Router();
 async function index(req, res) {
   const events = await listEvents();
   const { user: { username } = {} } = req || {};
+  let {offset} = req.params;
+  if(isNaN(offset)) offset = 0;
+  const next = `/${Number(offset) + 1}`;
+  const prev = `/${Number(offset) - 1}`;
 
   return res.render('admin', {
     username,
+    next,
+    prev,
     events,
     errors: [],
     data: {},
@@ -173,6 +179,8 @@ async function eventRoute(req, res, next) {
     data: { name: event.name, description: event.description },
   });
 }
+
+
 
 adminRouter.get('/', ensureLoggedIn, ensureAdmin, catchErrors(index));
 adminRouter.post(

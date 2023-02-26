@@ -12,16 +12,21 @@ import {
 export const indexRouter = express.Router();
 
 async function indexRoute(req, res) {
-  const {offset} = req.params;
+  let {offset} = req.params;
   let events;
   if (offset){
     events = await listEvents(offset);
-  } else{
+  } else {
     events = await listEvents();
   }
+  if(isNaN(offset)) offset = 0;
+  const next = `/${Number(offset) + 1}`;
+  const prev = `/${Number(offset) - 1}`;
   const admin = await isAdmin(req.user?.username);
   res.render('index', {
     title: 'Viðburðasíðan',
+    prev,
+    next,
     admin,
     authenticated: req.isAuthenticated(),
     events,

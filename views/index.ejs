@@ -4,6 +4,9 @@
 
 <%- include('events') -%>
 
+<a href="<%= next %>">Næsta síða</a>
+<a href="<%= prev %>">Fyrri síða</a>
+
 <div class="link">
   <% if (!authenticated) { %>
     <a class="link__link" href="/login">Innskráning</a>
@@ -11,9 +14,9 @@
     <a class="link__link" href="/signup">Nýskráning</a>
     <% } else {%>
       <a class="link__link" href="/logout">Útskrá </a>
-      <% if (admin) { %>
-        <a class="link__link" href="/admin">Admin síða </a>
-        <% } %>
-    <% } %>
+    <% if (admin) { %>
+      <a class="link__link" href="/admin">Admin síða </a>
+      <% } %>
+  <% } %>
 </div>
 <%- include('footer') -%>
