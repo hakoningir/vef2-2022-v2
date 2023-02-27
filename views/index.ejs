@@ -4,8 +4,10 @@
 
 <%- include('events') -%>
 
+<% if (prev != "/-1") { %>
+  <a href="<%= prev %>">Fyrri síða</a>
+<% } %>
 <a href="<%= next %>">Næsta síða</a>
-<a href="<%= prev %>">Fyrri síða</a>
 
 <div class="link">
   <% if (!authenticated) { %>
